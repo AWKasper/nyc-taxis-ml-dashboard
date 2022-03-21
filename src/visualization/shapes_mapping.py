@@ -1,7 +1,7 @@
 import geopandas as gpd
 import matplotlib.pyplot as plt
 
-def plottingNYC(path, column_used_for_legend=''):
+def plotting_map(path, column_used_for_legend=''):
     df = gpd.read_file(fr'{path}')
     df.head()
 
@@ -11,5 +11,5 @@ def plottingNYC(path, column_used_for_legend=''):
         df.plot(ax=ax)
     else:
         df.plot(ax=ax, column=f'{column_used_for_legend}', legend=True)
-    
-    plt.show()
+
+    return df
