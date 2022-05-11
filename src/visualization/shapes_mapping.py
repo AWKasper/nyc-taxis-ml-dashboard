@@ -11,5 +11,5 @@ def plotting_map(path, column_used_for_legend=''):
         df.plot(ax=ax)
     else:
         df.plot(ax=ax, column=f'{column_used_for_legend}', legend=True)
-
-    return df
+    
+    return plt
