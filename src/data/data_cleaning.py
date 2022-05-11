@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime as dt
 
-data= pd.read_csv("yellow_tripdata_2015-01.csv", sep= ",")
+data= pd.read_csv(r"local\yellow_tripdata_2015-01.csv", sep= ",")
 df= pd.DataFrame(data)
 
 #drop alle rows met nan (zijn er maar drie)
