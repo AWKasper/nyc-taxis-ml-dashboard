@@ -23,7 +23,7 @@ model = KMeans(n_clusters = 10)
 model.fit(df_num)
 # print(model.cluster_centers_)
 
-p = plottingNYC(mycwd  + r'\data\processed\taxi_zones\taxi_zones.shp', 'borough')
+p = plotting_map(mycwd  + r'\data\processed\taxi_zones\taxi_zones.shp', 'borough')
 p.scatter(df['dropoff_longitude'],df['dropoff_latitude'],alpha=0.05)
 p.scatter(model.cluster_centers_[:,0],model.cluster_centers_[:,1],color='red')
 
