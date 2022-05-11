@@ -12,4 +12,4 @@ def plottingNYC(path, column_used_for_legend=''):
     else:
         df.plot(ax=ax, column=f'{column_used_for_legend}', legend=True)
     
-    plt.show()
+    return plt
