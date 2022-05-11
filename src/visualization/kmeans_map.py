@@ -1,14 +1,6 @@
 import os
 import sys
 
-#Add modules to sys.path
-module_path = os.path.abspath(os.getcwd() + '\\..')
-if module_path not in sys.path:
-    sys.path.append(module_path)
-
-#Go up one directory
-os.chdir(os.path.dirname(os.getcwd()))
-
 mycwd = os.getcwd()
 
 from shapes_mapping import plottingNYC
@@ -31,7 +23,7 @@ model = KMeans(n_clusters = 10)
 model.fit(df_num)
 # print(model.cluster_centers_)
 
-p = plottingNYC(r'\data\processed\taxi_zones\taxi_zones.shp', 'borough')
+p = plottingNYC(mycwd  + r'\data\processed\taxi_zones\taxi_zones.shp', 'borough')
 p.scatter(df['dropoff_longitude'],df['dropoff_latitude'],alpha=0.05)
 p.scatter(model.cluster_centers_[:,0],model.cluster_centers_[:,1],color='red')
 
