@@ -11,7 +11,7 @@ os.chdir(os.path.dirname(os.getcwd()))
 
 mycwd = os.getcwd()
 
-from shapes_mapping import plottingNYC
+from shapes_mapping import plotting_map
 #Plotting NYC zones
 import pandas as pd
 from sqlalchemy import create_engine
