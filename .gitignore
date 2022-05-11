@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Local files that you don't want pushed
+**/local
+
 # Distribution / packaging
 .Python
 build/
