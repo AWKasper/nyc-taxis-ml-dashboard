@@ -45,5 +45,22 @@ for index, row in data.iterrows():
 
 data.to_sql(name='rides_per_day_2015', con=oege_engine(), if_exists = 'replace', index=False, chunksize=10000)
 
-# next add the day of the week and the month
+# next add the time of day, day of the week and the month
 
+chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
+
+dfr = pd.concat(chunks, ignore_index=True)
+
+dfr['day_of_the_week'] = 'empty'
+dfr['month_of_the_year'] = 'empty'
+dfr['time_of_day'] = 'empty'
+
+dfr['day_of_the_week'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime('%A'))
+
+dfr['month_of_the_year'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%b'))
+
+dfr['time_of_day'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%H'))
+
+dfr.to_sql(name='rides_per_day_2015', con=oege_engine(), if_exists = 'replace', index=False, chunksize=10000)
+
+# now some plots to get a simple view of the data
