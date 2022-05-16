@@ -58,9 +58,9 @@ dfr['day_of_the_week'] = 'empty'
 dfr['month_of_the_year'] = 'empty'
 dfr['time_of_day'] = 'empty'
 
-dfr['day_of_the_week'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime('%A'))
+dfr['day_of_the_week'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.weekday())
 
-dfr['month_of_the_year'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%b'))
+dfr['month_of_the_year'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%m'))
 
 dfr['time_of_day'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%H'))
 
@@ -88,3 +88,46 @@ plt.show()
 
 # training model
 
+# first one is a simple linear regression of which the results are quite bad
+
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
+
+model_data = pd.concat(chunks, ignore_index=True)
+
+model_data.dtypes
+
+train = model_data.drop(['count', 'tpep_pickup_datetime'], axis=1)
+
+test = model_data['count']
+
+X_train, X_test, y_train, y_test = train_test_split(train, test, test_size=0.2, random_state=2)
+
+linear_regr = LinearRegression()
+
+linear_regr.fit(X_train, y_train)
+
+pred = linear_regr.predict(X_test)
+
+
+X_test.columns
+
+# The coefficients
+print("Coefficients: \n", linear_regr.coef_)
+# The mean squared error
+print("Mean squared error: %.2f" % mean_squared_error(y_test, pred))
+# The coefficient of determination: 1 is perfect prediction
+print("Coefficient of determination: %.2f" % r2_score(y_test, pred))
+
+# Plot outputs
+fig, ax =plt.subplots(1,2)
+
+sns.stripplot(X_test['time_of_day'], y_test, color="black", ax=ax[0], order=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
+sns.stripplot(X_test['time_of_day'], pred, color="red", linewidth=3, alpha=0.3, ax=ax[1], order=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
+
+fig.show()
+
+# finding best alpha for linear regression
