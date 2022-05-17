@@ -82,15 +82,13 @@ plt.show()
 
 sns.relplot(x='mean_temperatureC', y='count', data=dfv, kind="line", ci=None)
 
-plt.show() 
-
-
+plt.show()
 
 # training model
 
 # first one is a simple linear regression of which the results are quite bad
 
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
@@ -111,9 +109,6 @@ linear_regr = LinearRegression()
 linear_regr.fit(X_train, y_train)
 
 pred = linear_regr.predict(X_test)
-
-
-X_test.columns
 
 # The coefficients
 print("Coefficients: \n", linear_regr.coef_)
