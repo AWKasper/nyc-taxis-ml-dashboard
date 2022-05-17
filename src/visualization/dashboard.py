@@ -20,7 +20,19 @@ LOGGER = get_logger(__name__)
 # Dictionary of
 # demo_name -> (demo_function, demo_description)
 PLOTS = OrderedDict(
-    [
+    [   
+        (
+            #Name of the plot
+            "Predict amount of rides for time of day",
+            (
+                #Plot function in plots.py
+                plots.ride_prediction,
+                #Additional information
+                """
+                Extra Info.
+                """,
+            ),
+        ),
         (
             #Name of the plot
             "Info Plot",

@@ -1,4 +1,5 @@
 from typing import Any
+from predicting_rides import linear_prediction
 
 def info_plots():
     import streamlit as st
@@ -13,6 +14,29 @@ def info_plots():
     st.sidebar.date_input(
      "End date",
      datetime.date(2015, 12, 12))
+
+def ride_prediction():
+    import streamlit as st
+    import time
+    import datetime
+
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+  
+    date = st.date_input(
+     "Pick a date for prediction")
+    time = st.time_input(
+        'Pick a time for prediction')
+    precipitation = st.number_input(
+        'amount of precipitation this day'
+    )
+    temperature = st.number_input(
+        'average temperature this day'
+    )
+
+    st.pyplot(linear_prediction(date, time, precipitation, temperature))
+
+
+
 
 
 def mapping_demo():

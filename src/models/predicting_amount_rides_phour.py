@@ -91,6 +91,7 @@ plt.show()
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
+import pickle
 
 chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
 
@@ -105,6 +106,8 @@ test = model_data['count']
 X_train, X_test, y_train, y_test = train_test_split(train, test, test_size=0.2, random_state=2)
 
 linear_regr = LinearRegression()
+
+X_train.head(-100)
 
 linear_regr.fit(X_train, y_train)
 
@@ -124,6 +127,8 @@ sns.stripplot(X_test['time_of_day'], y_test, color="black", ax=ax[0], order=['00
 sns.stripplot(X_test['time_of_day'], pred, color="red", linewidth=3, alpha=0.3, ax=ax[1], order=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
 
 fig.show()
+
+pickle.dump(linear_regr, open(r'src\models\multi_lin_regr_trained.sav', 'wb'))
 
 # finding best alpha for linear regression
 
