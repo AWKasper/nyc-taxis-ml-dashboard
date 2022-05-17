@@ -126,3 +126,4 @@ sns.stripplot(X_test['time_of_day'], pred, color="red", linewidth=3, alpha=0.3, 
 fig.show()
 
 # finding best alpha for linear regression
+
