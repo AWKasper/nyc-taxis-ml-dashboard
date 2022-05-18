@@ -18,7 +18,7 @@ def linear_prediction(date, time, precipitation, temperature):
     day = date.weekday()
     month = date.strftime(r'%m')
 
-    loaded_model = pickle.load(open('src\models\multi_lin_regr_trained.sav', 'rb'))
+    loaded_model = pickle.load(open(r'src\models\multi_lin_regr_trained.sav', 'rb'))
 
     prediction = loaded_model.predict([[temperature, precipitation, day, month, time_of_day]])
 
