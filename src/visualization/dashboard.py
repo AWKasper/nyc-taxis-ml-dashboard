@@ -44,51 +44,14 @@ PLOTS = OrderedDict(
                 Extra Info.
                 """,
             ),
-        ),
-        (
-            #Name of the plot
-            "Animation Plot",
-            (
-                #Plot function in plots.py
-                plots.fractal_demo,
-                #Additional information
-                """
-                Extra Info.
-                """,
-            ),
-        ),
-        (
-            #Name of the plot
-            "Plotting Demo",
-            (
-                #Plot function in plots.py
-                plots.plotting_demo,
-                #Additional information
-                """
-                Extra Info.
-                """,
-            ),
-        ),
+        ),  
         (
             #Name of the Plot
-            "Mapping Demo",
+            "Kmeans",
             (
                 #Plot function in plots.py
-                plots.mapping_demo,
+                plots.kmeans,
                 #Additional information
-                """
-                Extra Info.
-                """,
-            ),
-        ),
-        (
-            #Name of the Plot
-            "DataFrame Demo",
-            (
-                #Plot function in plots.py
-                plots.data_frame_demo,
-                #Additional information
-
                 """
                 Extra Info.
                 """,

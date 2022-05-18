@@ -39,80 +39,41 @@ def ride_prediction():
 
 
 
-def mapping_demo():
+def kmeans():
     import streamlit as st
+
+    import os
+
+    from shapes_mapping import plotting_map
+    #Plotting NYC zones
     import pandas as pd
-    import pydeck as pdk
+    from sqlalchemy import create_engine
+    from sklearn.cluster import KMeans
+    import matplotlib.pyplot as plt
+    mycwd = os.getcwd()
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    amount_of_data = st.slider('Amount data', 20000, 100000, value=25000)
+    df = pd.read_sql(f"SELECT dropoff_longitude, dropoff_latitude FROM uncleaned_NYC_yellowcabs_2015 LIMIT {amount_of_data}", engine)
 
-    from urllib.error import URLError
+    df_fixed = df['dropoff_longitude'].between(-74.3,-73.7) & df['dropoff_latitude'].between(40.0,41.0)
+    df = df[df_fixed]
+    df_num = df.to_numpy()
 
-    @st.cache
-    def from_data_file(filename):
-        url = (
-            "http://raw.githubusercontent.com/streamlit/"
-            "example-data/master/hello/v1/%s" % filename)
-        return pd.read_json(url)
+    kmeans_points = st.slider('kmeans', 0, 50, value=10)
 
-    try:
-        ALL_LAYERS = {
-            "Bike Rentals": pdk.Layer(
-                "HexagonLayer",
-                data=from_data_file("bike_rental_stats.json"),
-                get_position=["lon", "lat"],
-                radius=200,
-                elevation_scale=4,
-                elevation_range=[0, 1000],
-                extruded=True,
-            ),
-            "Bart Stop Exits": pdk.Layer(
-                "ScatterplotLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_color=[200, 30, 0, 160],
-                get_radius="[exits]",
-                radius_scale=0.05,
-            ),
-            "Bart Stop Names": pdk.Layer(
-                "TextLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_text="name",
-                get_color=[0, 0, 0, 200],
-                get_size=15,
-                get_alignment_baseline="'bottom'",
-            ),
-            "Outbound Flow": pdk.Layer(
-                "ArcLayer",
-                data=from_data_file("bart_path_stats.json"),
-                get_source_position=["lon", "lat"],
-                get_target_position=["lon2", "lat2"],
-                get_source_color=[200, 30, 0, 160],
-                get_target_color=[200, 30, 0, 160],
-                auto_highlight=True,
-                width_scale=0.0001,
-                get_width="outbound",
-                width_min_pixels=3,
-                width_max_pixels=30,
-            ),
-        }
-        st.sidebar.markdown('### Map Layers')
-        selected_layers = [
-            layer for layer_name, layer in ALL_LAYERS.items()
-            if st.sidebar.checkbox(layer_name, True)]
-        if selected_layers:
-            st.pydeck_chart(pdk.Deck(
-                map_style="mapbox://styles/mapbox/light-v9",
-                initial_view_state={"latitude": 37.76,
-                                    "longitude": -122.4, "zoom": 11, "pitch": 50},
-                layers=selected_layers,
-            ))
-        else:
-            st.error("Please choose at least one layer above.")
-    except URLError as e:
-        st.error("""
-            **This demo requires internet access.**
-            Connection error: %s
-        """ % e.reason)
+    model = KMeans(n_clusters = kmeans_points)
+    model.fit(df_num)
+    # print(model.cluster_centers_)
+
+    # get plotting map and scatter cluster points
+    p = plotting_map(r'data/processed/taxi_zones/taxi_zones.shp', 'borough')
+    p.scatter(df['dropoff_longitude'],df['dropoff_latitude'],alpha=0.05)
+    p.scatter(model.cluster_centers_[:,0],model.cluster_centers_[:,1],color='red')
+
+    #Going back to the working directory from before
+    os.chdir(fr'{mycwd}')
+
+    st.pyplot(p)
 # fmt: on
 
 # Turn off black formatting for this function to present the user with more
