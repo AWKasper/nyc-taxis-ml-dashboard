@@ -1,19 +1,16 @@
 from typing import Any
 from predicting_rides import linear_prediction
+from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
 
 def info_plots():
     import streamlit as st
     import time
     import datetime
 
-    st.sidebar.markdown("### Official Date Picker")
-  
-    st.sidebar.date_input(
-     "Start date",
-     datetime.date(2015, 1, 1))
-    st.sidebar.date_input(
-     "End date",
-     datetime.date(2015, 12, 12))
+    st.pyplot(barplot_kosten_pkm())
+    st.plotly_chart(plot_people_per_ride())
+
+    
 
 def ride_prediction():
     import streamlit as st
