@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import pandas as pd
+import datetime
 from datetime import datetime as dt
 import time as tm
 
@@ -39,9 +40,9 @@ def get_weather_3h_interval():
 
 def get_weather_for_date(date, time, dframe=get_weather_3h_interval()):
 
-    datetime = dt.combine(date, time)
+    datetime_unix = dt.combine(date, time)
     
-    unix_timestamp = tm.mktime(datetime.timetuple())
+    unix_timestamp = tm.mktime(datetime_unix.timetuple())
     
     found_unix = min(dframe['dt'], key=lambda x:abs(x-unix_timestamp))
 

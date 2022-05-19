@@ -23,21 +23,18 @@ def ride_prediction():
      "Pick a date for prediction")
     time = st.time_input(
         'Pick a time for prediction')
-    precipitation = st.number_input(
-        'amount of precipitation this day in mm',
-        min_value=0.0,
-        max_value=30000.0,
-        step=0.1
-    )
+
+    col1, col2 = st.columns(2)
+    
     temperature = st.number_input(
-        'average temperature this day in Celsius',
+        'Temperature in Celsius',
         min_value=-100.0,
         value=0.0,
         max_value=100.0,
         step=0.1
     )
 
-    st.pyplot(linear_prediction(date, time, precipitation, temperature))
+    st.pyplot(linear_prediction(date, time, temperature))
 
 
 
