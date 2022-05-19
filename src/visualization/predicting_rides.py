@@ -1,9 +1,8 @@
 import numpy as np
 import math
 import pandas as pd
-import datetime
-from datetime import datetime as dt
-import time as tm
+from datetime import datetime as datetime
+import calendar
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -36,13 +35,15 @@ def get_weather_3h_interval():
 
     dfjson['weather'] = dfjson['weather'].apply(lambda x: x[0].get('description'))
 
+    dfjson.head()
+
     return dfjson
 
 def get_weather_for_date(date, time, dframe=get_weather_3h_interval()):
 
-    datetime_unix = dt.combine(date, time)
+    datetime_unix = datetime.combine(date, time)
     
-    unix_timestamp = tm.mktime(datetime_unix.timetuple())
+    unix_timestamp = calendar.timegm(datetime_unix.utctimetuple())
     
     found_unix = min(dframe['dt'], key=lambda x:abs(x-unix_timestamp))
 
@@ -55,7 +56,15 @@ def get_weather_for_date(date, time, dframe=get_weather_3h_interval()):
     wind_speed = row['wind.speed']
     wind_deg = row['wind.deg']
 
-    return weather, tempC, pressure, humidity, wind_speed, wind_deg
+    return weather, tempC, humidity, pressure, wind_speed, wind_deg
+
+def check_weather_range(date, time, dframe=get_weather_3h_interval()):
+    datetime_unix = datetime.combine(date, time)
+    
+    unix_timestamp = calendar.timegm(datetime_unix.utctimetuple())
+    
+    return unix_timestamp >= dframe['dt'].iloc[0] and unix_timestamp <= dframe['dt'].iloc[-1]
+
 
 def linear_prediction(date, time, precipitation, temperature):
 

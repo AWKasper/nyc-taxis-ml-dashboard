@@ -1,6 +1,7 @@
 from typing import Any
 from predicting_rides import linear_prediction
 from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
+import pandas as pd
 
 def info_plots():
     import streamlit as st
@@ -17,16 +18,30 @@ def ride_prediction():
     import time
     import datetime
 
+    df = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+
+    options = df['New York'].unique()
+
     st.set_option('deprecation.showPyplotGlobalUse', False)
   
+    st.header('Set the date and time')
+
     date = st.date_input(
      "Pick a date for prediction")
     time = st.time_input(
         'Pick a time for prediction')
 
-    col1, col2 = st.columns(2)
+    st.header('Set the weather')
+    st.write('The weather will be set automatically by an API if the chosen date and time is within the next five days')
+
+    col1, col2, col3 = st.columns(3)
+
+    weather = col1.selectbox(
+        'Choose the kind of weather',
+        options=options
+    )
     
-    temperature = st.number_input(
+    temperature = col2.number_input(
         'Temperature in Celsius',
         min_value=-100.0,
         value=0.0,
@@ -34,10 +49,7 @@ def ride_prediction():
         step=0.1
     )
 
-    st.pyplot(linear_prediction(date, time, temperature))
-
-
-
+    st.pyplot(linear_prediction(date, time, 0.0,  temperature))
 
 
 def kmeans():
