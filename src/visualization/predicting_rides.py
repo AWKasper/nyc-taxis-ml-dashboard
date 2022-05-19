@@ -1,7 +1,8 @@
 import numpy as np
 import math
 import pandas as pd
-from datetime import datetime
+from datetime import datetime as dt
+import time as tm
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -11,6 +12,49 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import pickle
 
+import requests
+
+params = dict(
+    lat=40.7128,
+    lon=-74.0060,
+    appid='8b4b8a258d0247a8fe04aa9e7c5489ad',
+)
+
+url = 'http://api.openweathermap.org/data/2.5/forecast?'
+
+def get_weather_3h_interval():
+    resp = requests.get(url=url, params=params)
+
+    data = resp.json()
+
+    dfjson = pd.json_normalize(data['list'])
+
+    dfjson = dfjson.drop(['visibility', 'pop', 'main.feels_like', 'main.temp_min', 'main.temp_max', 'main.sea_level','main.temp_kf', 'main.grnd_level', 'clouds.all', 'wind.gust', 'sys.pod', 'rain.3h'], axis=1)
+
+    dfjson['main.temp'] = dfjson['main.temp'].apply(lambda x: x-273.15)
+
+    dfjson['weather'] = dfjson['weather'].apply(lambda x: x[0].get('description'))
+
+    return dfjson
+
+def get_weather_for_date(date, time, dframe=get_weather_3h_interval()):
+
+    datetime = dt.combine(date, time)
+    
+    unix_timestamp = tm.mktime(datetime.timetuple())
+    
+    found_unix = min(dframe['dt'], key=lambda x:abs(x-unix_timestamp))
+
+    row = dframe.loc[dframe['dt'] == found_unix]
+
+    weather = row['weather']
+    tempC = row['main.temp']
+    pressure = row['main.pressure']
+    humidity = row['main.humidity']
+    wind_speed = row['wind.speed']
+    wind_deg = row['wind.deg']
+
+    return weather, tempC, pressure, humidity, wind_speed, wind_deg
 
 def linear_prediction(date, time, precipitation, temperature):
 
