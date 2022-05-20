@@ -66,15 +66,18 @@ def check_weather_range(date, time, dframe=get_weather_3h_interval()):
     return unix_timestamp >= dframe['dt'].iloc[0] and unix_timestamp <= dframe['dt'].iloc[-1]
 
 
-def linear_prediction(date, time, precipitation, temperature):
+def linear_prediction(date, time, weather, temp, humidity, pressure, wind_speed, wind_degr):
 
     time_of_day = time.strftime(r'%H')
-    day = date.weekday()
-    month = date.strftime(r'%m')
+    day = date.strftime('%A')
+    month = date.strftime(r'%B')
 
-    loaded_model = pickle.load(open(r'src\models\multi_lin_regr_trained.sav', 'rb'))
+    multi_linear_model = pickle.load(open(r'src\models\multi_lin_regr_trained.sav', 'rb'))
 
-    prediction = loaded_model.predict([[temperature, precipitation, day, month, time_of_day]])
+    pred_df = pd.DataFrame([[weather, temp, humidity, pressure, wind_speed, wind_degr, day, month, time_of_day]], 
+        columns=["weather_description", 'temperatureC', 'humidity', 'pressure', 'wind_speed', 'wind_degr', 'day_of_the_week', 'month_of_the_year', 'time_of_day'])
+
+    prediction = multi_linear_model.predict(pred_df)
 
     df = pd.DataFrame([[math.ceil(prediction[0]), 'multiple linear regression']], columns=["prediction", 'model'])
     
