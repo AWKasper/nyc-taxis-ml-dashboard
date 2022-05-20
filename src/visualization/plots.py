@@ -88,6 +88,49 @@ def ride_prediction():
             max_value=360.0,
             step=0.1
         )
+    else:
+        weather = col1.selectbox(
+            'Choose the kind of weather',
+            index=1,
+            options=options
+        )
+    
+        temperature = col2.number_input(
+            'Temperature in Celsius',
+            min_value=-100.0,
+            value=0.0,
+            max_value=100.0,
+            step=0.1
+        )
+
+        humidity = col3.number_input(
+            'Humidity',
+            min_value=0.0,
+            max_value=10000.0,
+            step=0.1
+        )
+
+        pressure = col1.number_input(
+            'Pressure',
+            min_value=-1000.0,
+            value=0.0,
+            max_value=10000.0,
+            step=0.1
+        )
+
+        wind_spd = col2.number_input(
+            'Wind speed',
+            min_value=0.0,
+            max_value=1000.0,
+            step=0.1
+        )
+
+        wind_dgr = col3.number_input(
+            'Degree of the wind',
+            min_value=0.0,
+            max_value=360.0,
+            step=0.1
+        )
 
     st.pyplot(linear_prediction(date, time, weather, temperature, humidity, pressure, wind_spd, wind_dgr))
 
