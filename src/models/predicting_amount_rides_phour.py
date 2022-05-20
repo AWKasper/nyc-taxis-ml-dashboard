@@ -11,60 +11,74 @@ import matplotlib.pyplot as plt
 
 # firstly getting the amount of trips for every hour
 
-chunks = pd.read_sql("SELECT tpep_pickup_datetime, VendorID FROM uncleaned_NYC_yellowcabs_2015", oege_engine(), chunksize=10000)
+def amount_trips_phour(dframe):
 
-df = pd.concat(chunks, ignore_index=True)
+    df.rename(columns={"VendorID": "count"}, inplace=True)
 
-df.rename(columns={"VendorID": "count"}, inplace=True)
+    df.tpep_pickup_datetime = df.tpep_pickup_datetime.apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').replace(minute=0, second=0))
 
-df.tpep_pickup_datetime = df.tpep_pickup_datetime.apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').replace(minute=0, second=0))
+    df = df.groupby('tpep_pickup_datetime', as_index=False).count()
 
-df = df.groupby('tpep_pickup_datetime', as_index=False).count()
-
-df.to_sql(name='rides_per_day_2015',con=oege_engine(),if_exists='replace',index=False, chunksize=10000)
+    return df
 
 # secondly getting the weather information per day or hour
 
-dfw = pd.read_csv(r'local\weather_2015.csv')
+def weather_phour(dframe):
 
-dfw = dfw[['EST', 'Mean TemperatureC', 'Precipitationmm']].copy()
+    dframe = pd.read_csv(r'local\rides_phour.csv')
 
-dfw.EST = dfw.EST.apply(lambda x: datetime.strptime(x, '%Y-%m-%d').date())
+    dframe = dframe.drop(['mean_temperatureC', 'precipitationmm'], axis=1).copy()
 
-data = pd.read_csv(r'local\rides_phour.csv')
+    dfw = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+    dft = pd.read_csv(r'data\processed\weather_data\temperature.csv')
+    dfh = pd.read_csv(r'data\processed\weather_data\humidity.csv')
+    dfp = pd.read_csv(r'data\processed\weather_data\pressure.csv')
+    dfws = pd.read_csv(r'data\processed\weather_data\wind_speed.csv')
+    dfwd = pd.read_csv(r'data\processed\weather_data\wind_direction.csv')
 
-data['mean_temperatureC'] = 0.0
+    dframe['weather_description'] = 'nan'
+    dframe['temperatureC'] = 0.0
+    dframe['humidity'] = 0.0
+    dframe['pressure'] = 0.0
+    dframe['wind_speed'] = 0.0
+    dframe['wind_degr'] = 0.0
 
-data['precipitationmm'] = 0.0
+    for index, row in dframe.iterrows():
+        date = dframe['tpep_pickup_datetime'][index]
 
-for index, row in data.iterrows():
-    date = data['tpep_pickup_datetime'][index]
+        dframe['weather_description'][index] = dfw.loc[dfw['datetime'] == date]['New York'].values[0]
+        dframe['temperatureC'][index] = round(float(dft.loc[dft['datetime'] == date]['New York'] - 273.15), 2)
+        dframe['humidity'][index] = round(float(dfh.loc[dfh['datetime'] == date]['New York']), 2)
+        dframe['pressure'][index] = round(float(dfp.loc[dfp['datetime'] == date]['New York']), 2)
+        dframe['wind_speed'][index] = round(float(dfws.loc[dfws['datetime'] == date]['New York']), 2)
+        dframe['wind_degr'][index] = round(float(dfwd.loc[dfwd['datetime'] == date]['New York']), 2)
 
-    temperature = dfw.loc[dfw['EST'] == datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()]['Mean TemperatureC']
-    precipitation = dfw.loc[dfw['EST'] == datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()]['Precipitationmm']
+    dframe.to_sql(name='rides_per_day_2015',con=oege_engine(),if_exists='replace',index=False, chunksize=10000)
 
-    data['mean_temperatureC'][index] = float(temperature)
-    data['precipitationmm'][index] = float(precipitation)
 
-data.to_sql(name='rides_per_day_2015', con=oege_engine(), if_exists = 'replace', index=False, chunksize=10000)
+    return dframe
 
 # next add the time of day, day of the week and the month
 
-chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
+def add_datetime(dframe):
 
-dfr = pd.concat(chunks, ignore_index=True)
+    chunks = pd.read_sql('SELECT * FROM rides_per_day_2015', con=oege_engine(), chunksize=10000)
 
-dfr['day_of_the_week'] = 'empty'
-dfr['month_of_the_year'] = 'empty'
-dfr['time_of_day'] = 'empty'
+    dframe = pd.concat(chunks, ignore_index=True)
 
-dfr['day_of_the_week'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.weekday())
+    dframe['day_of_the_week'] = 'empty'
+    dframe['month_of_the_year'] = 'empty'
+    dframe['time_of_day'] = 'empty'
 
-dfr['month_of_the_year'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%m'))
+    dframe['day_of_the_week'] = dframe['tpep_pickup_datetime'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime('%A'))
 
-dfr['time_of_day'] = dfr['tpep_pickup_datetime'].apply(lambda x: x.strftime(r'%H'))
+    dframe['month_of_the_year'] = dframe['tpep_pickup_datetime'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime(r'%B'))
 
-dfr.to_sql(name='rides_per_day_2015', con=oege_engine(), if_exists = 'replace', index=False, chunksize=10000)
+    dframe['time_of_day'] = dframe['tpep_pickup_datetime'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime(r'%H'))
+
+    dframe.to_sql(name='rides_per_day_2015',con=oege_engine(),if_exists='replace',index=False, chunksize=10000)
+
+    return dframe
 
 # now some plots to get a simple view of the data
 
@@ -88,7 +102,7 @@ plt.show()
 
 # first one is a simple linear regression of which the results are quite bad
 
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import pickle
@@ -97,38 +111,41 @@ chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksiz
 
 model_data = pd.concat(chunks, ignore_index=True)
 
-model_data.dtypes
+model_data.columns.tolist()
+
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+categorical_preprocessor = OneHotEncoder(handle_unknown="ignore")
+numerical_preprocessor = StandardScaler()
+
+from sklearn.compose import ColumnTransformer
+
+model_data_cat = model_data[['weather_description', 'day_of_the_week', 'month_of_the_year']].columns.tolist()
+model_data_num = model_data.drop(['tpep_pickup_datetime', 'weather_description', 'day_of_the_week', 'month_of_the_year', 'count'], axis=1).columns.tolist()
+
+preprocessor = ColumnTransformer([
+    ('one-hot-encoder', categorical_preprocessor, model_data_cat),
+    ('standard_scaler', numerical_preprocessor, model_data_num)])
+
+from sklearn.pipeline import make_pipeline
+
+model = make_pipeline(preprocessor, LinearRegression())
 
 train = model_data.drop(['count', 'tpep_pickup_datetime'], axis=1)
 
 test = model_data['count']
 
-X_train, X_test, y_train, y_test = train_test_split(train, test, test_size=0.2, random_state=2)
+X_train, X_test, y_train, y_test = train_test_split(train, test, test_size=0.2, random_state=42)
 
-linear_regr = LinearRegression()
+X_train.head(10)
 
-X_train.head(-100)
+trained_model = model.fit(X_train, y_train)
 
-linear_regr.fit(X_train, y_train)
+pred = trained_model.predict(X_test)
 
-pred = linear_regr.predict(X_test)
+model.score(X_test, y_test)
 
-# The coefficients
-print("Coefficients: \n", linear_regr.coef_)
-# The mean squared error
-print("Mean squared error: %.2f" % mean_squared_error(y_test, pred))
-# The coefficient of determination: 1 is perfect prediction
-print("Coefficient of determination: %.2f" % r2_score(y_test, pred))
-
-# Plot outputs
-fig, ax =plt.subplots(1,2)
-
-sns.stripplot(X_test['time_of_day'], y_test, color="black", ax=ax[0], order=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
-sns.stripplot(X_test['time_of_day'], pred, color="red", linewidth=3, alpha=0.3, ax=ax[1], order=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
-
-fig.show()
-
-pickle.dump(linear_regr, open(r'src\models\multi_lin_regr_trained.sav', 'wb'))
+pickle.dump(trained_model, open(r'src\models\multi_lin_regr_trained.sav', 'wb'))
 
 # finding best alpha for linear regression
 

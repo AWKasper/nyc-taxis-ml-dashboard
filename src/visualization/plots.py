@@ -1,40 +1,95 @@
 from typing import Any
-from predicting_rides import linear_prediction
+from predicting_rides import linear_prediction, check_weather_range, get_weather_for_date
 from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
+import pandas as pd
+import numpy
 
 def info_plots():
     import streamlit as st
-    import time
+    import time as tm
     import datetime
 
     st.pyplot(barplot_kosten_pkm())
     st.plotly_chart(plot_people_per_ride())
 
-    
 
 def ride_prediction():
     import streamlit as st
-    import time
+    import time as tm
     import datetime
+
+    df = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+
+    options = df['New York'].unique()
+
+    options = options[1:].copy()
 
     st.set_option('deprecation.showPyplotGlobalUse', False)
   
+    st.header('Set the date and time')
+
     date = st.date_input(
-     "Pick a date for prediction")
+        "Pick a date for prediction")
     time = st.time_input(
         'Pick a time for prediction')
-    precipitation = st.number_input(
-        'amount of precipitation this day'
-    )
-    temperature = st.number_input(
-        'average temperature this day'
-    )
 
-    st.pyplot(linear_prediction(date, time, precipitation, temperature))
+    st.header('Set the weather')
+    st.write('The weather will be set automatically by an API if the chosen date and time is within the next five days')
 
+    col1, col2, col3 = st.columns(3)
 
+    if check_weather_range(date, time):
+        weather_list = get_weather_for_date(date, time)
 
+        result = numpy.where(options == weather_list[0].iloc[0])[0][0]
 
+        weather = col1.selectbox(
+            'Choose the kind of weather',
+            index=int(result),
+            options=options
+        )
+    
+        temperature = col2.number_input(
+            'Temperature in Celsius',
+            min_value=-100.0,
+            value=float(weather_list[1]),
+            max_value=100.0,
+            step=0.1
+        )
+
+        humidity = col3.number_input(
+            'Humidity',
+            min_value=0.0,
+            value=float(weather_list[2]),
+            max_value=10000.0,
+            step=0.1
+        )
+
+        pressure = col1.number_input(
+            'Pressure',
+            min_value=-1000.0,
+            value=float(weather_list[3]),
+            max_value=10000.0,
+            step=0.1
+        )
+
+        wind_spd = col2.number_input(
+            'Wind speed',
+            min_value=0.0,
+            value=float(weather_list[4]),
+            max_value=1000.0,
+            step=0.1
+        )
+
+        wind_dgr = col3.number_input(
+            'Degree of the wind',
+            min_value=0.0,
+            value=float(weather_list[5]),
+            max_value=360.0,
+            step=0.1
+        )
+
+    st.pyplot(linear_prediction(date, time, weather, temperature, humidity, pressure, wind_spd, wind_dgr))
 
 def kmeans():
     import streamlit as st
@@ -111,7 +166,7 @@ def fractal_demo():
 # fmt: off
 def plotting_demo():
     import streamlit as st
-    import time
+    import time as tm
     import numpy as np
 
     progress_bar = st.sidebar.progress(0)
@@ -125,7 +180,7 @@ def plotting_demo():
         chart.add_rows(new_rows)
         progress_bar.progress(i)
         last_rows = new_rows
-        time.sleep(0.05)
+        tm.sleep(0.05)
 
     progress_bar.empty()
 
