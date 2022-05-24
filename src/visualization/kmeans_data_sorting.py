@@ -1,10 +1,5 @@
-from re import A
-from time import strftime
-from typing import Dict
 from sqlalchemy import create_engine
-from sklearn.cluster import KMeans
 import pandas as pd
-import datetime as dt
 
 DATE_COL = "tpep_pickup_datetime"
 LONGI = "pickup_longitude"
