@@ -20,7 +20,7 @@ def make_kmeans_map_graph(kmeans_points : int = 10, n_data : int = 25000):
     model.fit(df_num)
 
     # get plotting map and scatter cluster points
-    p = plotting_map(r'..\..\data\processed\taxi_zones\taxi_zones.shp', 'borough')
+    p = plotting_map(rf'{os.getcwd()}\data\processed\taxi_zones\taxi_zones.shp', 'borough')
     p.scatter(df['dropoff_longitude'],df['dropoff_latitude'],alpha=0.05)
     p.scatter(model.cluster_centers_[:,0],model.cluster_centers_[:,1],color='red')
 
