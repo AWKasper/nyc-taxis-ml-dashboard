@@ -4,6 +4,14 @@ from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
 import pandas as pd
 import numpy
 
+df = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+
+options = df['New York'].unique()
+
+options[1] = 'clear sky'
+
+options = options[1:].copy()
+
 def info_plots():
     import streamlit as st
     import time as tm
@@ -17,12 +25,6 @@ def ride_prediction():
     import streamlit as st
     import time as tm
     import datetime
-
-    df = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
-
-    options = df['New York'].unique()
-
-    options = options[1:].copy()
 
     st.set_option('deprecation.showPyplotGlobalUse', False)
   
@@ -43,94 +45,58 @@ def ride_prediction():
 
         result = numpy.where(options == weather_list[0].iloc[0])[0][0]
 
-        weather = col1.selectbox(
-            'Choose the kind of weather',
-            index=int(result),
-            options=options
-        )
-    
-        temperature = col2.number_input(
-            'Temperature in Celsius',
-            min_value=-100.0,
-            value=float(weather_list[1]),
-            max_value=100.0,
-            step=0.1
-        )
-
-        humidity = col3.number_input(
-            'Humidity',
-            min_value=0.0,
-            value=float(weather_list[2]),
-            max_value=10000.0,
-            step=0.1
-        )
-
-        pressure = col1.number_input(
-            'Pressure',
-            min_value=-1000.0,
-            value=float(weather_list[3]),
-            max_value=10000.0,
-            step=0.1
-        )
-
-        wind_spd = col2.number_input(
-            'Wind speed',
-            min_value=0.0,
-            value=float(weather_list[4]),
-            max_value=1000.0,
-            step=0.1
-        )
-
-        wind_dgr = col3.number_input(
-            'Degree of the wind',
-            min_value=0.0,
-            value=float(weather_list[5]),
-            max_value=360.0,
-            step=0.1
-        )
+        do_prediction(date, time, result, weather_list[1], weather_list[2], weather_list[3], weather_list[4], weather_list[5], col1, col2, col3)
     else:
-        weather = col1.selectbox(
-            'Choose the kind of weather',
-            index=1,
-            options=options
-        )
-    
-        temperature = col2.number_input(
-            'Temperature in Celsius',
-            min_value=-100.0,
-            value=0.0,
-            max_value=100.0,
-            step=0.1
-        )
+        do_prediction(date, time, 1, 0.0, 0.0, 0.0, 0.0, 0.0, col1, col2, col3)
 
-        humidity = col3.number_input(
-            'Humidity',
-            min_value=0.0,
-            max_value=10000.0,
-            step=0.1
-        )
+def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, col1, col2, col3):
+    import streamlit as st
 
-        pressure = col1.number_input(
-            'Pressure',
-            min_value=-1000.0,
-            value=0.0,
-            max_value=10000.0,
-            step=0.1
-        )
+    weather = col1.selectbox(
+        'Choose the kind of weather',
+        index=int(weather_desc),
+        options=options
+    )
 
-        wind_spd = col2.number_input(
-            'Wind speed',
-            min_value=0.0,
-            max_value=1000.0,
-            step=0.1
-        )
+    temperature = col2.number_input(
+        'Temperature in Celsius',
+        min_value=-100.0,
+        value=float(temp),
+        max_value=100.0,
+        step=0.1
+    )
 
-        wind_dgr = col3.number_input(
-            'Degree of the wind',
-            min_value=0.0,
-            max_value=360.0,
-            step=0.1
-        )
+    humidity = col3.number_input(
+        'Humidity',
+        min_value=0.0,
+        value=float(humid),
+        max_value=10000.0,
+        step=0.1
+    )
+
+    pressure = col1.number_input(
+        'Pressure',
+        min_value=-1000.0,
+        value=float(press),
+        max_value=10000.0,
+        step=0.1
+    )
+
+    wind_spd = col2.number_input(
+        'Wind speed',
+        min_value=0.0,
+        value=float(spd),
+        max_value=1000.0,
+        step=0.1
+    )
+
+    wind_dgr = col3.number_input(
+        'Degree of the wind',
+        min_value=0.0,
+        value=float(dgr),
+        max_value=360.0,
+        step=0.1
+    )
 
     st.pyplot(linear_prediction(date, time, weather, temperature, humidity, pressure, wind_spd, wind_dgr))
 

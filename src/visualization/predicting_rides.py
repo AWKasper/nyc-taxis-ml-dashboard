@@ -63,7 +63,7 @@ def check_weather_range(date, time, dframe=get_weather_3h_interval()):
     
     unix_timestamp = calendar.timegm(datetime_unix.utctimetuple())
     
-    return unix_timestamp >= dframe['dt'].iloc[0] and unix_timestamp <= dframe['dt'].iloc[-1]
+    return unix_timestamp >= dframe['dt'].iloc[0] -  7200 and unix_timestamp + 10800 <= dframe['dt'].iloc[-1]
 
 
 def linear_prediction(date, time, weather, temp, humidity, pressure, wind_speed, wind_degr):
