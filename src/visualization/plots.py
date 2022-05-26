@@ -4,27 +4,22 @@ from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
 import pandas as pd
 import numpy
 
-df = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+dfweather_desc = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
 
-options = df['New York'].unique()
-
+options = dfweather_desc['New York'].unique()
 options[1] = 'clear sky'
-
 options = options[1:].copy()
 
 def info_plots():
     import streamlit as st
-    import time as tm
-    import datetime
 
     st.pyplot(barplot_kosten_pkm())
     st.plotly_chart(plot_people_per_ride())
 
-
 def ride_prediction():
     import streamlit as st
     import time as tm
-    import datetime
+    from datetime import datetime
 
     st.set_option('deprecation.showPyplotGlobalUse', False)
   
@@ -36,7 +31,8 @@ def ride_prediction():
         'Pick a time for prediction')
 
     st.header('Set the weather')
-    st.write('The weather will be set automatically by an API if the chosen date and time is within the next five days')
+    st.write('The weather will be set automatically by an API if the chosen date and time is within the next five days.\n'
+            + 'When a date and time outside of the next five days is chosen, an average from 2012-2017 will be chosen instead.')
 
     col1, col2, col3 = st.columns(3)
 
@@ -47,7 +43,22 @@ def ride_prediction():
 
         do_prediction(date, time, result, weather_list[1], weather_list[2], weather_list[3], weather_list[4], weather_list[5], col1, col2, col3)
     else:
-        do_prediction(date, time, 1, 0.0, 0.0, 0.0, 0.0, 0.0, col1, col2, col3)
+        month = date.strftime(r'%B')
+
+        hour = float(time.strftime(r'%H'))
+
+        dfaverage = pd.read_csv(r'data\processed\weather_data\average_weather_2012-2017.csv')
+
+        average_weather = dfaverage.loc[(dfaverage['month'] == month) & (dfaverage['time'] == hour)]
+
+        print(average_weather)
+
+        result = numpy.where(options == average_weather['weather'].iloc[0])[0][0]
+
+        print(result)
+
+        do_prediction(date, time, result, average_weather['temperature'].iloc[0] - 273.15, average_weather['humidity'].iloc[0],
+                        average_weather['pressure'].iloc[0], average_weather['wind_speed'].iloc[0], average_weather['wind_direction'].iloc[0], col1, col2, col3)
 
 def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, col1, col2, col3):
     import streamlit as st
