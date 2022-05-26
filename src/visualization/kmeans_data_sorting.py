@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, insert, MetaData, Table
 import pandas as pd
 
 DATE_COL = "tpep_pickup_datetime"
@@ -29,20 +29,21 @@ def __write_to_file(filename : str, data : dict):
         json.dump(data, f, indent=4)
 
 def __write_to_db(data : dict):
-    #engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
-    dic = dict()
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    _list_of_data = []
     for key in data:
         point_string = ""
         for point in data[key]:
             point_string += f"{point[0]} {point[1]} "
-        dic[key] = point_string
+        _list_of_data.append({"Date" : key, "Points" : point_string})
+
+    meta_data = MetaData(bind=engine)
+    meta_data.reflect()
+
+    _table = meta_data.tables['Points_grouped_by_date']
+    stmt = _table.insert().values(_list_of_data)
+    engine.execute(stmt)
     
-    for key in dic:
-        points = dic[key].split()
-        print(key)
-        for p in points:
-            print(float(p), end=' ')
-        print()
 
 if __name__ == '__main__':
     df = __get_data(50)
