@@ -80,27 +80,9 @@ def add_datetime(dframe):
 
     return dframe
 
-# now some plots to get a simple view of the data
-
-chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
-
-dfv = pd.concat(chunks, ignore_index=True)
-
-sns.set_theme(style="ticks")
-
-hue_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-sns.relplot(x='time_of_day', y='count', data=dfv, hue='day_of_the_week', kind="line", palette=sns.color_palette("rocket_r", n_colors=7), ci=None, size="month_of_the_year", hue_order=hue_order, alpha=.7)
-
-plt.show() 
-
-sns.relplot(x='mean_temperatureC', y='count', data=dfv, kind="line", ci=None)
-
-plt.show()
-
 # training model
 
-# first one is a simple linear regression of which the results are quite bad
+# first one is a simple linear regression of which the results are not too accurate
 
 from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -145,7 +127,60 @@ pred = trained_model.predict(X_test)
 
 model.score(X_test, y_test)
 
+from sklearn.metrics import mean_absolute_error
+
+mean_absolute_error(y_test, pred)
+
 pickle.dump(trained_model, open(r'src\models\multi_lin_regr_trained.sav', 'wb'))
 
-# finding best alpha for linear regression
+#get average weather
 
+dfw = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+dft = pd.read_csv(r'data\processed\weather_data\temperature.csv')
+dfh = pd.read_csv(r'data\processed\weather_data\humidity.csv')
+dfp = pd.read_csv(r'data\processed\weather_data\pressure.csv')
+dfws = pd.read_csv(r'data\processed\weather_data\wind_speed.csv')
+dfwd = pd.read_csv(r'data\processed\weather_data\wind_direction.csv')
+
+dfw = dfw[['datetime', 'New York']]
+dfw.rename({'New York': 'weather'}, axis=1, inplace=True)
+dft = dft[['New York']]
+dft.rename({'New York': 'temperature'}, axis=1, inplace=True)
+dfh = dfh[['New York']]
+dfh.rename({'New York': 'humidity'}, axis=1, inplace=True)
+dfp = dfp[['New York']]
+dfp.rename({'New York': 'pressure'}, axis=1, inplace=True)
+dfws = dfws[['New York']]
+dfws.rename({'New York': 'wind_speed'}, axis=1, inplace=True)
+dfwd = dfwd[['New York']]
+dfwd.rename({'New York': 'wind_direction'}, axis=1, inplace=True)
+
+df = pd.concat([dfw, dft, dfh, dfp, dfws, dfwd], axis=1)
+
+df = df.iloc[1: , :]
+
+df['month'] = 'nan'
+df['time'] = 00
+
+df['month'] = df['datetime'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime(r'%B'))
+
+df['time'] = df['datetime'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').strftime(r'%H'))
+
+df.drop(['datetime'], axis=1, inplace=True)
+
+df.dropna()
+
+dfmean = df.groupby(['month','time'], as_index=False).agg(
+                                                    weather = ('weather', lambda x: x.value_counts().index[0]),
+                                                    temperature = ('temperature', 'mean'),
+                                                    humidity = ('humidity', 'mean'),
+                                                    pressure = ('pressure', 'mean'),
+                                                    wind_speed = ('wind_speed', 'mean'),
+                                                    wind_direction = ('wind_direction', 'mean')
+                                                    )
+
+dfmean.tail(10)
+dfmean.describe()
+
+dfmean.to_csv(r'data\processed\weather_data\average_weather_2012-2017.csv')
+dfmean.to_sql(name='average_weather_2012-2017', con=oege_engine(), if_exists='fail', chunksize=10000, index=False)
