@@ -1,16 +1,17 @@
-from sqlalchemy import create_engine, insert, MetaData, Table
+from sqlalchemy import create_engine, insert, MetaData, Table, select
 import pandas as pd
 
 DATE_COL = "tpep_pickup_datetime"
 LONGI = "pickup_longitude"
 LATI = "pickup_latitude"
 
-def __get_data(amount = 50000):
+# amount = 0 will be interpreted as all
+def __get_data(offset = 0, amount = 50000, chunksize = 10000):
     engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
-    query = f"""SELECT {DATE_COL}, {LONGI}, {LATI} FROM 
-    (SELECT * FROM uncleaned_NYC_yellowcabs_2015 LIMIT {amount}) 
-    AS limited_data"""
-    return pd.read_sql(query, engine)
+    query = f"SELECT {DATE_COL}, {LONGI}, {LATI} FROM uncleaned_NYC_yellowcabs_2015 LIMIT {amount} OFFSET {offset}"
+    if amount == 0: query = f"SELECT {DATE_COL}, {LONGI}, {LATI} FROM uncleaned_NYC_yellowcabs_2015"
+    chunks = pd.read_sql(query, engine, chunksize = chunksize )
+    return pd.concat(chunks, ignore_index=True)
     
 def __format_date_strings(df : pd.DataFrame):
     df[DATE_COL] = df.apply(lambda row:row['tpep_pickup_datetime'][:-6], axis=1)
@@ -20,7 +21,8 @@ def __order_coords_by_date(df : pd.DataFrame):
     dic = dict()
     for i, row in df.iterrows():
         dic.setdefault(row[DATE_COL], list())
-        dic[row[DATE_COL]].append([row[LONGI],row[LATI]])
+        dic[row[DATE_COL]].append(row[LONGI])
+        dic[row[DATE_COL]].append(row[LATI])
     return dic
 
 def __write_to_file(filename : str, data : dict):
@@ -29,26 +31,47 @@ def __write_to_file(filename : str, data : dict):
         json.dump(data, f, indent=4)
 
 def __write_to_db(data : dict):
+    import json
     engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
-    _list_of_data = []
-    for key in data:
-        point_string = ""
-        for point in data[key]:
-            point_string += f"{point[0]} {point[1]} "
-        _list_of_data.append({"Date" : key, "Points" : point_string})
-
-    meta_data = MetaData(bind=engine)
-    meta_data.reflect()
-
-    _table = meta_data.tables['Points_grouped_by_date']
-    stmt = _table.insert().values(_list_of_data)
-    engine.execute(stmt)
     
+    _table = __get_table(engine,'Points_grouped_by_date')
 
-if __name__ == '__main__':
-    df = __get_data(50)
+    _to_send_to_db = list()
+    for key in data:
+        point_list = [point for point in data[key]]
+        json_object = json.dumps({key : point_list})
+        _to_send_to_db.append({"Date" : key, "Data" : json_object})  
+
+    engine.execute(_table.insert(), _to_send_to_db)
+
+def execute_processing():
+    # 0, 10000
+    df = __get_data(0, 10000, 1000)
     df = __format_date_strings(df)
     dic = __order_coords_by_date(df)
     __write_to_db(dic)
+
+def __get_table(engine, table_name : str):
+    meta_data = MetaData(bind=engine)
+    meta_data.reflect()
+    table = meta_data.tables[table_name]
+    return table
+
+def get_points_at_date(date : str) -> list[float]:
+    import json
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    table = __get_table(engine, 'Points_grouped_by_date')
+    stmt = select(table).where(table.c.Date == date)
+    rows = [row for row in engine.execute(stmt)]
+    js = json.loads(rows[0]['Data'])
+    return js[date]
+
+if __name__ == '__main__':
+    print(get_points_at_date('2015-01-02 15'))
+    #execute_processing()
+    # df = __get_data(50,9)
+    # df = __format_date_strings(df)
+    # dic = __order_coords_by_date(df)
+    # __write_to_db(dic)
     #__write_to_file("rides.json", dic)
     
