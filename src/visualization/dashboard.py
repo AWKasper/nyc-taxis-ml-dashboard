@@ -5,6 +5,7 @@ from collections import OrderedDict
 import streamlit as st
 from streamlit.logger import get_logger
 import plots
+import kmeans_map
 
 #Deleting watermark
 hide_streamlit_style = """
@@ -52,9 +53,7 @@ PLOTS = OrderedDict(
                 #Plot function in plots.py
                 plots.kmeans,
                 #Additional information
-                """
-                Extra Info.
-                """,
+                kmeans_map.PLOT_DESCRIPTION,
             ),
         ),
     ]
