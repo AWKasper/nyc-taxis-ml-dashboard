@@ -45,8 +45,7 @@ def __write_to_db(data : dict):
     engine.execute(_table.insert(), _to_send_to_db)
 
 def execute_processing():
-    # 0, 10000
-    df = __get_data(0, 10000, 1000)
+    df = __get_data(0, 0, 25000)
     df = __format_date_strings(df)
     dic = __order_coords_by_date(df)
     __write_to_db(dic)
