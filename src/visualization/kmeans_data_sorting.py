@@ -20,9 +20,9 @@ def __format_date_strings(df : pd.DataFrame):
 def __order_coords_by_date(df : pd.DataFrame):
     dic = dict()
     for i, row in df.iterrows():
-        dic.setdefault(row[DATE_COL], list())
-        dic[row[DATE_COL]].append(row[LONGI])
-        dic[row[DATE_COL]].append(row[LATI])
+        dic.setdefault(row[DATE_COL], {'Longitude' : list(), 'Langitude' : list()})
+        dic[row[DATE_COL]]['Longitude'].append(row[LONGI])
+        dic[row[DATE_COL]]['Langitude'].append(row[LATI])
     return dic
 
 def __write_to_file(filename : str, data : dict):
@@ -36,16 +36,12 @@ def __write_to_db(data : dict):
     
     _table = __get_table(engine,'Points_grouped_by_date')
 
-    _to_send_to_db = list()
-    for key in data:
-        point_list = [point for point in data[key]]
-        json_object = json.dumps({key : point_list})
-        _to_send_to_db.append({"Date" : key, "Data" : json_object})  
-
+    _to_send_to_db = [{"Date" : key, "Longitude" : json.dumps(data[key]["Longitude"]),"Langitude" : json.dumps(data[key]['Langitude'])} for key in data]
+    
     engine.execute(_table.insert(), _to_send_to_db)
 
 def execute_processing():
-    df = __get_data(0, 0, 25000)
+    df = __get_data(0, 25, 25000)
     df = __format_date_strings(df)
     dic = __order_coords_by_date(df)
     __write_to_db(dic)
@@ -66,8 +62,8 @@ def get_points_at_date(date : str) -> list[float]:
     return js[date]
 
 if __name__ == '__main__':
-    print(get_points_at_date('2015-01-02 15'))
-    #execute_processing()
+    #print(get_points_at_date('2015-01-02 15'))
+    execute_processing()
     # df = __get_data(50,9)
     # df = __format_date_strings(df)
     # dic = __order_coords_by_date(df)
