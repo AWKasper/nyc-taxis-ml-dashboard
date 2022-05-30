@@ -113,39 +113,13 @@ def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, col1, 
 
 def kmeans():
     import streamlit as st
+    import kmeans_map as km
 
-    import os
+    amount_of_data = st.sidebar.slider('Amount data', 20000, 100000, value=25000)
+    kmeans_points = st.sidebar.slider('kmeans', 0, 50, value=10)
+    plot = km.make_kmeans_map_graph(kmeans_points, amount_of_data)
 
-    from shapes_mapping import plotting_map
-    #Plotting NYC zones
-    import pandas as pd
-    from sqlalchemy import create_engine
-    from sklearn.cluster import KMeans
-    import matplotlib.pyplot as plt
-    mycwd = os.getcwd()
-    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
-    amount_of_data = st.slider('Amount data', 20000, 100000, value=25000)
-    df = pd.read_sql(f"SELECT dropoff_longitude, dropoff_latitude FROM uncleaned_NYC_yellowcabs_2015 LIMIT {amount_of_data}", engine)
-
-    df_fixed = df['dropoff_longitude'].between(-74.3,-73.7) & df['dropoff_latitude'].between(40.0,41.0)
-    df = df[df_fixed]
-    df_num = df.to_numpy()
-
-    kmeans_points = st.slider('kmeans', 0, 50, value=10)
-
-    model = KMeans(n_clusters = kmeans_points)
-    model.fit(df_num)
-    # print(model.cluster_centers_)
-
-    # get plotting map and scatter cluster points
-    p = plotting_map(r'data/processed/taxi_zones/taxi_zones.shp', 'borough')
-    p.scatter(df['dropoff_longitude'],df['dropoff_latitude'],alpha=0.05)
-    p.scatter(model.cluster_centers_[:,0],model.cluster_centers_[:,1],color='red')
-
-    #Going back to the working directory from before
-    os.chdir(fr'{mycwd}')
-
-    st.pyplot(p)
+    st.pyplot(plot)
 # fmt: on
 
 # Turn off black formatting for this function to present the user with more
