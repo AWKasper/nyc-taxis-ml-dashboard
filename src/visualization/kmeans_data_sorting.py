@@ -8,22 +8,22 @@ LATI = "pickup_latitude"
 
 # amount = 0 will be interpreted as all
 def __get_data(offset = 0, amount = 50000, chunksize = 10000):
-    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1', echo=True)
     query = f"SELECT {DATE_COL}, {LONGI}, {LATI} FROM uncleaned_NYC_yellowcabs_2015 LIMIT {amount} OFFSET {offset}"
     if amount == 0: query = f"SELECT {DATE_COL}, {LONGI}, {LATI} FROM uncleaned_NYC_yellowcabs_2015"
     chunks = pd.read_sql(query, engine, chunksize = chunksize )
     return pd.concat(chunks, ignore_index=True)
     
 def __format_date_strings(df : pd.DataFrame):
-    df[DATE_COL] = df.apply(lambda row:row['tpep_pickup_datetime'][:-6], axis=1)
+    df[DATE_COL] = df.apply(lambda row:row['tpep_pickup_datetime'][:-1], axis=1)
     return df
 
 def __order_coords_by_date(df : pd.DataFrame):
     dic = dict()
     for i, row in df.iterrows():
-        dic.setdefault(row[DATE_COL], {'Longitude' : list(), 'Langitude' : list()})
-        dic[row[DATE_COL]]['Longitude'].append(row[LONGI])
-        dic[row[DATE_COL]]['Langitude'].append(row[LATI])
+        dic.setdefault(row[DATE_COL], list())
+        dic[row[DATE_COL]].append(row[LONGI])
+        dic[row[DATE_COL]].append(row[LATI])
     return dic
 
 def __write_to_file(filename : str, data : dict):
@@ -64,7 +64,6 @@ def get_points_at_date(date : str) -> list[float]:
     return js[date]
 
 if __name__ == '__main__':
-    #print(get_points_at_date('2015-01-02 15'))
     execute_processing()
     # df = __get_data(50,9)
     # df = __format_date_strings(df)

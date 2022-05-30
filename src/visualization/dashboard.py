@@ -7,11 +7,16 @@ from streamlit.logger import get_logger
 import plots
 import kmeans_map
 
+st.set_page_config(
+    initial_sidebar_state="expanded"
+)
+
 #Deleting watermark
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
+            header {width: 0 !important; height: 0 !important;}
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
@@ -22,6 +27,17 @@ LOGGER = get_logger(__name__)
 # demo_name -> (demo_function, demo_description)
 PLOTS = OrderedDict(
     [   
+        (
+            #Name of the plot
+            "Home",
+            (
+                #Plot function in plots.py
+                plots.home,
+                #Additional information
+                """
+                """,
+            ),
+        ),
         (
             #Name of the plot
             "Predict amount of rides for time of day",
@@ -61,6 +77,7 @@ PLOTS = OrderedDict(
 
 
 def run():
+
     plot_name = st.sidebar.selectbox("Choose a plot", list(PLOTS.keys()), 0)
     current_plot = PLOTS[plot_name][0]
 
