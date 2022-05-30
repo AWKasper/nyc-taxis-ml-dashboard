@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, insert, MetaData, Table, select
+import tools.db_tools as tools
 import pandas as pd
 
 DATE_COL = "tpep_pickup_datetime"
@@ -32,17 +33,13 @@ def __write_to_file(filename : str, data : dict):
 
 def __write_to_db(data : dict):
     import json
-    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1', echo=True)
-
-    _to_send_to_db = list()
-    for key in data:
-        point_list = [point for point in data[key]]
-        json_object = json.dumps({key : point_list})
-        _to_send_to_db.append({"Date" : key, "Data" : json_object})  
-
-    df = pd.DataFrame(_to_send_to_db)
-
-    df.to_sql(name='Points_grouped_by_date',con=engine,if_exists='fail',index=False, chunksize=10000, method=None)
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    
+    _table = tools.get_table(engine,'Points_grouped_by_date')
+    print(_table)
+    _to_send_to_db = [{"Date" : key, "Longitude" : json.dumps(data[key]["Longitude"]),"Langitude" : json.dumps(data[key]['Langitude'])} for key in data]
+    
+    engine.execute(_table.insert(), _to_send_to_db)
 
 def execute_processing():
     df = __get_data(0, 0, 25000)
@@ -50,16 +47,17 @@ def execute_processing():
     dic = __order_coords_by_date(df)
     __write_to_db(dic)
 
-def __get_table(engine, table_name : str):
-    meta_data = MetaData(bind=engine)
-    meta_data.reflect()
-    table = meta_data.tables[table_name]
-    return table
+# deprecated and moved into generic toolset: tools/db_tools
+# def __get_table(engine, table_name : str):
+#     meta_data = MetaData(bind=engine)
+#     meta_data.reflect()
+#     table = meta_data.tables[table_name]
+#     return table
 
 def get_points_at_date(date : str) -> list[float]:
     import json
-    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1', echo=True)
-    table = __get_table(engine, 'Points_grouped_by_date')
+    engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
+    table = tools.get_table(engine, 'Points_grouped_by_date')
     stmt = select(table).where(table.c.Date == date)
     rows = [row for row in engine.execute(stmt)]
     js = json.loads(rows[0]['Data'])
