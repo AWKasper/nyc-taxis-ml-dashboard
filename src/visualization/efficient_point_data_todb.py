@@ -36,7 +36,7 @@ def __write_to_db(df : pd.DataFrame):
     
     df = df.rename(columns={'tpep_pickup_datetime' : 'ID', 'pickup_longitude' : 'Longitude', 'pickup_langitude' : 'Langitude'})
     
-    df.to_sql(name='ID_date_points', con=engine, if_exists='replace', index=False)
+    df.to_sql(name='ID_date_points', con=engine, if_exists='replace', index=False, chunksize=10000)
     
 
 if __name__ == '__main__':
