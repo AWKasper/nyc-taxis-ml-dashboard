@@ -8,7 +8,6 @@ import plots
 import kmeans_map
 
 st.set_page_config(
-    layout="wide",
     initial_sidebar_state="expanded"
 )
 
@@ -18,10 +17,6 @@ hide_streamlit_style = """
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {width: 0 !important; height: 0 !important;}
-
-            .block-container {
-                max-width: 1000px;
-            }
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
@@ -32,6 +27,17 @@ LOGGER = get_logger(__name__)
 # demo_name -> (demo_function, demo_description)
 PLOTS = OrderedDict(
     [   
+        (
+            #Name of the plot
+            "Home",
+            (
+                #Plot function in plots.py
+                plots.home,
+                #Additional information
+                """
+                """,
+            ),
+        ),
         (
             #Name of the plot
             "Predict amount of rides for time of day",
@@ -71,19 +77,6 @@ PLOTS = OrderedDict(
 
 
 def run():
-
-    home = st.button('Home1')
-    
-    #the navigation buttons in the header
-    header = """
-        <div data-stale="false" width="829" class="element-container css-1apqg8s e1tzin5v3">
-            <div class="row-widget stButton" style="width: 829px;"><button kind="primary" class="css-jik6m7 edgvbvh9">Home2</button>
-            </div>
-        </div>
-        """
-    header_mark = st.markdown(header, unsafe_allow_html=True) 
-
-    st.write(str(home) + str(header_mark))
 
     plot_name = st.sidebar.selectbox("Choose a plot", list(PLOTS.keys()), 0)
     current_plot = PLOTS[plot_name][0]
