@@ -1,6 +1,6 @@
 from typing import Any
-from predicting_rides import linear_prediction, check_weather_range, get_weather_for_date
-from nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
+from dashboard_plots.predicting_rides import linear_prediction, check_weather_range, get_weather_for_date
+from dashboard_plots.nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
 import pandas as pd
 import numpy
 
@@ -9,12 +9,6 @@ dfweather_desc = pd.read_csv(r'data\processed\weather_data\weather_description.c
 options = dfweather_desc['New York'].unique()
 options[1] = 'clear sky'
 options = options[1:].copy()
-
-def home():
-    import streamlit as st
-    
-    #title of the page
-    st.header('Dashboard for NYC taxis with interactive and predictive elements')
 
 def info_plots():
     import streamlit as st

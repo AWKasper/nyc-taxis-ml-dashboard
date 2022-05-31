@@ -17,7 +17,7 @@ def __get_data(offset = 0, amount = 50000, chunksize = 10000):
     return pd.concat(chunks, ignore_index=True)
     
 def __format_date_strings(df : pd.DataFrame):
-    df[DATE_COL] = df.apply(lambda row:row['tpep_pickup_datetime'][:-6], axis=1)
+    df[DATE_COL] = df.apply(lambda row:row['tpep_pickup_datetime'], axis=1)
     return df
 
 def execute_process():
@@ -27,9 +27,10 @@ def execute_process():
     __write_to_db(df)
 
 def __convert_date_to_id(row):
-    dt = datetime.strptime(row, '%Y-%m-%d %H')
-    delta = dt - MIN_DATE_ID
-    return delta.days * 24 + delta.seconds / 3600
+    import calendar
+    dt = datetime.strptime(row, '%Y-%m-%d %H:%M:%S')
+    unix = calendar.timegm(dt.utctimetuple())
+    return unix
 
 def __write_to_db(df : pd.DataFrame):
     engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
