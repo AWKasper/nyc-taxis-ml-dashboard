@@ -4,22 +4,9 @@ from collections import OrderedDict
 
 import streamlit as st
 from streamlit.logger import get_logger
-import plots
-import kmeans_map
-
-st.set_page_config(
-    initial_sidebar_state="expanded"
-)
+import dashboard_plots.plots as plots
 
 #Deleting watermark
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {width: 0 !important; height: 0 !important;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
 LOGGER = get_logger(__name__)
 
@@ -27,17 +14,6 @@ LOGGER = get_logger(__name__)
 # demo_name -> (demo_function, demo_description)
 PLOTS = OrderedDict(
     [   
-        (
-            #Name of the plot
-            "Home",
-            (
-                #Plot function in plots.py
-                plots.home,
-                #Additional information
-                """
-                """,
-            ),
-        ),
         (
             #Name of the plot
             "Predict amount of rides for time of day",
@@ -69,14 +45,15 @@ PLOTS = OrderedDict(
                 #Plot function in plots.py
                 plots.kmeans,
                 #Additional information
-                kmeans_map.PLOT_DESCRIPTION,
+                """Blue dots signify a pickup point, the greater the intensity the more saturated the location.
+                Red dots indicate centers of the clusters of points. The amount of red dots can be set with the slider on the left.""",
             ),
         ),
     ]
 )
 
 
-def run():
+def load_view():
 
     plot_name = st.sidebar.selectbox("Choose a plot", list(PLOTS.keys()), 0)
     current_plot = PLOTS[plot_name][0]
@@ -97,4 +74,4 @@ def run():
     current_plot()
 
 if __name__ == "__main__":
-    run()
+    load_view()

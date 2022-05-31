@@ -7,9 +7,6 @@ from sqlalchemy import create_engine
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-PLOT_DESCRIPTION = """Blue dots signify a pickup point, the greater the intensity the more saturated the location.
-Red dots indicate centers of the clusters of points. The amount of red dots can be set with the slider on the left."""
-
 def make_kmeans_map_graph(kmeans_points : int = 10, n_data : int = 25000):
     engine = create_engine('mysql+mysqlconnector://kaspera1:H1c3VA29xnjPrT@oege.ie.hva.nl/zkaspera1')
 
