@@ -113,7 +113,7 @@ def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, col1, 
 
 def kmeans():
     import streamlit as st
-    import kmeans_map as km
+    import dashboard_plots.kmeans_map as km
 
     amount_of_data = st.sidebar.slider('Amount data', 20000, 100000, value=25000)
     kmeans_points = st.sidebar.slider('kmeans', 0, 50, value=10)
