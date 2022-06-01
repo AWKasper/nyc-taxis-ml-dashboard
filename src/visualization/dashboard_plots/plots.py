@@ -31,7 +31,7 @@ def ride_prediction():
         'Pick a time for prediction')
 
     st.header('Set the weather')
-    st.write('The weather will be set automatically by an API if the chosen date and time is within the next five days.\n'
+    st.write('The weather will be set automatically by an openweathermap API if the chosen date and time is within the next five days.\n'
             + 'When a date and time outside of the next five days is chosen, an average from 2012-2017 will be chosen instead.')
 
     col1, col2, col3 = st.columns(3)
