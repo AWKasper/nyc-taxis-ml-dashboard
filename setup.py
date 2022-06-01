@@ -1,8 +1,8 @@
-from distutils.core import setup
-
-setup(name='BigData',
-      version='1.0',
-      description='Algorithm for New York Cabs',
-      author='Project Big Data - T1',
-      packages=['seaborn', 'geopandas', 'streamlit', 'pandas', 'SQLAlchemy', 'numpy', 'sklearn', 'plotly', 'matplotlib'],
-     )
+import os
+lib_folder = os.path.dirname(os.path.realpath(__file__))
+requirement_path = lib_folder + '/requirements.txt'
+install_requires = []
+if os.path.isfile(requirement_path):
+    with open(requirement_path) as f:
+        install_requires = f.read().splitlines()
+setup(name="mypackage", install_requires=install_requires, [...])
