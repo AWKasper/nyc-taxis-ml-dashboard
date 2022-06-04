@@ -3,7 +3,10 @@ from dashboard_plots.predicting_rides import rides_prediction, check_weather_ran
 import pandas as pd
 import numpy as np
 
-dfweather_desc = pd.read_csv(r'data\processed\weather_data\weather_description.csv')
+path = os.path.dirname(__file__)
+my_file = path+'/weather_description.csv'
+
+dfweather_desc = pd.read_csv(myfile)
 
 options = dfweather_desc['New York'].drop_duplicates().str.replace(' ', '').unique()
 options[2] = 'clearsky'
