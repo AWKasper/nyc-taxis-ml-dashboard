@@ -5,7 +5,8 @@ import numpy as np
 import os
 
 
-path = os.path.dirname('weather_description.csv')
+path = os.getcwd()
+print(path)
 my_file = path+'/weather_description.csv'
 
 # r'data\processed\weather_data\weather_description.csv'
