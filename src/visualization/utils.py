@@ -5,7 +5,7 @@ from streamlit.components.v1 import html
 from PATHS import NAVBAR_PATHS
 
 def inject_custom_css():
-    with open(r'\app\nyc-taxis-ml-dashboard\src\visualization\assets\styles.css') as f:
+    with open(r'/app/nyc-taxis-ml-dashboard/src/visualization/assets/styles.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
