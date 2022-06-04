@@ -68,22 +68,31 @@ def rides_prediction(date, time, weather, temp, humidity, pressure, wind_speed, 
 
     linear_pred_smape = 0.3413018386054954
     logistic_pred_smape = 0.34397898085140044
+    ridge_pred_smape = 0.3413065092336175
 
     time_of_day = time.strftime(r'%H')
     day = date.strftime('%A')
     month = date.strftime(r'%B')
 
     multi_linear_model = pickle.load(open(r'src\models\multi_lin_regr_trained.sav', 'rb'))
-    logistic_model = pickle.load(open(r'src\models\log_regr_trained.sav', 'rb'))
+    ridge_model = pickle.load(open(r'src\models\ridge_trained.sav', 'rb'))
 
     pred_df = pd.DataFrame([[weather, temp, humidity, pressure, wind_speed, wind_degr, day, month, time_of_day]], 
         columns=["weather_description", 'temperatureC', 'humidity', 'pressure', 'wind_speed', 'wind_degr', 'day_of_the_week', 'month_of_the_year', 'time_of_day'])
 
     lin_prediction = multi_linear_model.predict(pred_df)
-    log_prediction = logistic_model.predict(pred_df)
+    ridge_prediction = ridge_model.predict(pred_df)
 
-    df = pd.DataFrame([[math.ceil(lin_prediction[0]), 'multiple linear regression', linear_pred_smape], [math.ceil(log_prediction[0]), 'logistic regression', logistic_pred_smape]], columns=["prediction", 'model', 'smape'])
+    df = pd.DataFrame([
+                    [math.ceil(lin_prediction[0]), 'multiple linear regression', linear_pred_smape],
+                    [math.ceil(ridge_prediction[0]), 'ridge regression', ridge_pred_smape]
+                    ],
+                    columns=["prediction", 'model', 'smape'])
     
     g = sns.barplot(data=df, x='model', y='prediction', yerr=df['prediction'] * df['smape'])
+
+    for index, row in df.iterrows():
+        g.text(row.name, row.prediction * row.smape, row.prediction,
+            color='white', ha='center')
 
     plt.show()

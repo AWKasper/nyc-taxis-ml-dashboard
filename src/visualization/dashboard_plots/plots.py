@@ -81,15 +81,15 @@ def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, auto):
         'Humidity',
         min_value=0.0,
         value=float(humid),
-        max_value=10000.0,
+        max_value=100.0,
         step=0.1
     )
 
     pressure = col1.number_input(
         'Pressure',
-        min_value=-1000.0,
+        min_value=800.0,
         value=float(press),
-        max_value=10000.0,
+        max_value=1100.0,
         step=0.1
     )
 
@@ -97,7 +97,7 @@ def do_prediction(date, time, weather_desc, temp, humid, press, spd, dgr, auto):
         'Wind speed',
         min_value=0.0,
         value=float(spd),
-        max_value=1000.0,
+        max_value=500.0,
         step=0.1
     )
 
