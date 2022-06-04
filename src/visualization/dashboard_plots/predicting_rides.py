@@ -35,8 +35,6 @@ def get_weather_3h_interval():
 
     dfjson['weather'] = dfjson['weather'].apply(lambda x: x[0].get('description'))
 
-    dfjson.head()
-
     return dfjson
 
 def get_weather_for_date(date, time, dframe=get_weather_3h_interval()):
@@ -66,26 +64,35 @@ def check_weather_range(date, time, dframe=get_weather_3h_interval()):
     return unix_timestamp >= dframe['dt'].iloc[0] -  7200 and unix_timestamp + 10800 <= dframe['dt'].iloc[-1]
 
 
-def linear_prediction(date, time, weather, temp, humidity, pressure, wind_speed, wind_degr):
+def rides_prediction(date, time, weather, temp, humidity, pressure, wind_speed, wind_degr):
+
+    linear_pred_smape = 0.3413018386054954
+    logistic_pred_smape = 0.34397898085140044
+    ridge_pred_smape = 0.3413065092336175
 
     time_of_day = time.strftime(r'%H')
     day = date.strftime('%A')
     month = date.strftime(r'%B')
 
     multi_linear_model = pickle.load(open(r'src\models\multi_lin_regr_trained.sav', 'rb'))
+    ridge_model = pickle.load(open(r'src\models\ridge_trained.sav', 'rb'))
 
     pred_df = pd.DataFrame([[weather, temp, humidity, pressure, wind_speed, wind_degr, day, month, time_of_day]], 
         columns=["weather_description", 'temperatureC', 'humidity', 'pressure', 'wind_speed', 'wind_degr', 'day_of_the_week', 'month_of_the_year', 'time_of_day'])
 
-    prediction = multi_linear_model.predict(pred_df)
+    lin_prediction = multi_linear_model.predict(pred_df)
+    ridge_prediction = ridge_model.predict(pred_df)
 
-    df = pd.DataFrame([[math.ceil(prediction[0]), 'multiple linear regression']], columns=["prediction", 'model'])
+    df = pd.DataFrame([
+                    [math.ceil(lin_prediction[0]), 'multiple linear regression', linear_pred_smape],
+                    [math.ceil(ridge_prediction[0]), 'ridge regression', ridge_pred_smape]
+                    ],
+                    columns=["prediction", 'model', 'smape'])
     
-    # , x=prediction.columns[0]
-    g = sns.catplot(data=df, kind='bar', x='model', y='prediction')
+    g = sns.barplot(data=df, x='model', y='prediction', yerr=df['prediction'] * df['smape'])
 
-    ax = g.facet_axis(0, 0)
-
-    ax.bar_label(ax.containers[0])
+    for index, row in df.iterrows():
+        g.text(row.name, row.prediction * row.smape, row.prediction,
+            color='white', ha='center')
 
     plt.show()
