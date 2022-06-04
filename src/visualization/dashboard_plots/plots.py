@@ -5,7 +5,8 @@ import numpy as np
 import os
 
 path = os.path.dirname(__file__)
-my_file = path+'/weather_description.csv'
+print(path)
+my_file = path+'\weather_description.csv'
 
 dfweather_desc = pd.read_csv(myfile)
 
