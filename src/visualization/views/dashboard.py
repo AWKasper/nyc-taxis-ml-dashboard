@@ -22,7 +22,7 @@ PLOTS = OrderedDict(
                 plots.ride_prediction,
                 #Additional information
                 """
-                On this page you get to see a prediction of the amount of rides there will be within a certain hour
+                On this page you can get a prediction for the amount of rides there will be within a certain hour.
                 """,
             ),
         ),
