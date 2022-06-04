@@ -4,14 +4,9 @@ import pandas as pd
 import numpy as np
 import os
 
-
-path = os.getcwd()
-print(path)
-my_file = path+'/weather_description.csv'
-
 # r'data\processed\weather_data\weather_description.csv'
 
-dfweather_desc = pd.read_csv(my_file)
+dfweather_desc = pd.read_csv('/app/nyc-taxis-ml-dashboard/data/processed/weather_data.csv')
 
 options = dfweather_desc['New York'].drop_duplicates().str.replace(' ', '').unique()
 options[2] = 'clearsky'
