@@ -84,16 +84,14 @@ def add_datetime(dframe):
 
 # first one is a simple linear regression of which the results are not too accurate
 
-from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
+from sklearn.linear_model import LinearRegression, RidgeCV, LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, r2_score
 import pickle
 
 chunks = pd.read_sql("SELECT * FROM rides_per_day_2015", oege_engine(), chunksize=10000)
 
 model_data = pd.concat(chunks, ignore_index=True)
-
-model_data.columns.tolist()
 
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -111,15 +109,15 @@ preprocessor = ColumnTransformer([
 
 from sklearn.pipeline import make_pipeline
 
-model = make_pipeline(preprocessor, LinearRegression())
+alphas = np.linspace(0.5, 1, 1000)
+
+model = make_pipeline(preprocessor, RidgeCV(alphas=alphas))
 
 train = model_data.drop(['count', 'tpep_pickup_datetime'], axis=1)
 
 test = model_data['count']
 
 X_train, X_test, y_train, y_test = train_test_split(train, test, test_size=0.2, random_state=42)
-
-X_train.head(10)
 
 trained_model = model.fit(X_train, y_train)
 
@@ -130,8 +128,22 @@ model.score(X_test, y_test)
 from sklearn.metrics import mean_absolute_error
 
 mean_absolute_error(y_test, pred)
+np.sqrt(mean_squared_error(y_test, pred))
+mean_absolute_percentage_error(y_test, pred)
 
-pickle.dump(trained_model, open(r'src\models\multi_lin_regr_trained.sav', 'wb'))
+pickle.dump(trained_model, open(r'src\models\ridge_trained.sav', 'wb'))
+
+# getting the error for linear regression
+# result was 0.3413018386054954 last time
+# getting the error for logistic regression
+# result was 0.34397898085140044 last time
+# getting the error for ridge regression
+# result was 0.3413065092336175 last time
+
+def smape(A, F):
+    return 1/len(A) * np.sum(2 * np.abs(F - A) / (np.abs(A) + np.abs(F)))
+
+smape(y_test, pred)
 
 #get average weather
 
