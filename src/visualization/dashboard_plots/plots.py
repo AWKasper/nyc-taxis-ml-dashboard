@@ -1,6 +1,5 @@
 from typing import Any
 from dashboard_plots.predicting_rides import rides_prediction, check_weather_range, get_weather_for_date
-from dashboard_plots.nyc_taxi_plots import barplot_kosten_pkm, plot_people_per_ride
 import pandas as pd
 import numpy as np
 
@@ -12,9 +11,6 @@ options = options[1:].copy()
 
 def info_plots():
     import streamlit as st
-
-    st.pyplot(barplot_kosten_pkm())
-    st.plotly_chart(plot_people_per_ride())
 
 def ride_prediction():
     import streamlit as st
