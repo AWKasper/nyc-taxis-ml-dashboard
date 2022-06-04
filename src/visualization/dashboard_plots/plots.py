@@ -2,6 +2,7 @@ from typing import Any
 from dashboard_plots.predicting_rides import rides_prediction, check_weather_range, get_weather_for_date
 import pandas as pd
 import numpy as np
+import os
 
 path = os.path.dirname(__file__)
 my_file = path+'/weather_description.csv'
