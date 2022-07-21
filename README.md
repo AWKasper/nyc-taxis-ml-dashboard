@@ -6,6 +6,9 @@ The dashboard has some interactive views where you can play around with the amou
 ![image](https://user-images.githubusercontent.com/96128829/180113254-df63bdf2-6262-4461-b3d3-a6d6e2848aaa.png)
 ![image](https://user-images.githubusercontent.com/96128829/180113353-dd42ff47-e57d-4556-8125-2491794d734c.png)
 ![image](https://user-images.githubusercontent.com/96128829/180113398-ec0b91c8-5cb5-4a71-9a1a-4d67d8f3b78c.png)
+![image](https://user-images.githubusercontent.com/96128829/180113538-b5a82ac3-59a5-43ea-b7f1-6b4a408e308c.png)
+![image](https://user-images.githubusercontent.com/96128829/180113590-cc6f579c-4e78-46c6-888f-85ba2fe4fd1f.png)
+
 
 ## Project status
 This project was a school project and there is no planned development roadmap.
